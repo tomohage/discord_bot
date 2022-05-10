@@ -1,10 +1,23 @@
 
-# DiscordChannels.py
- 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import discord
 import datetime
+
+def get_file_text(file_path):
+    if file_path is None:
+        return None
+    f = open(file_path, 'r', encoding='UTF-8')
+    text = f.read()
+    f.close()
+    return text
+
 client = discord.Client()
- 
+
+token = get_file_text('token')
+text_channel = int(get_file_text('text_channel'))
+voice_channel = int(get_file_text('voice_channel'))
+
 # 起動時処理
 @client.event
 async def on_ready():
@@ -17,14 +30,13 @@ async def on_ready():
 # チャンネル入退室時の通知処理
 @client.event
 async def on_voice_state_update(member, before, after):
- 
     # チャンネルへの入室ステータスが変更されたとき（ミュートON、OFFに反応しないように分岐）
     if before.channel != after.channel:
         # 通知メッセージを書き込むテキストチャンネル（チャンネルIDを指定）
-        botRoom = client.get_channel(get_file_text('text_channel'))
- 
+        botRoom = client.get_channel(text_channel)
+
         # 入退室を監視する対象のボイスチャンネル（チャンネルIDを指定）
-        announceChannelIds = [get_file_text('voice_channel')]
+        announceChannelIds = [voice_channel]
 
         # 現在時刻
         t_delta = datetime.timedelta(hours=9)
@@ -39,14 +51,6 @@ async def on_voice_state_update(member, before, after):
         if after.channel is not None and after.channel.id in announceChannelIds:
             await botRoom.send("[" + d + "] **" + after.channel.name + "** に、__" + member.name + "__  が参加しました！")
 
-def get_file_text(file_path):
-    if file_path is None:
-        return None
-    f = open(file_path, 'r', encoding='UTF-8')
-    text = f.read()
-    f.close()
-    return text
-
 if __name__ == '__main__':
     # Botのトークンを指定（デベロッパーサイトで確認可能）
-    client.run(get_file_text('token'))
+    client.run(token)
